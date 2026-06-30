@@ -1459,11 +1459,17 @@ function DiaExpandido({
   const [ativo, setAtivo] = useState(ATIVOS[0]);
   const [ativoOutro, setAtivoOutro] = useState("");
   const [valor, setValor] = useState("");
+  const [sinal, setSinal] = useState("ganho"); // ganho | perda
+
   const totalDia = trades.reduce((a, t) => a + t.resultado, 0);
   const pctDia = totalDia / saldoInicial * 100;
   function submeter() {
     const nome = ativo === "Outro" ? ativoOutro.trim().toUpperCase() || "Outro" : ativo;
-    if (onAdd(diaISO, nome, valor)) {
+    // valor absoluto, com o sinal a vir dos botões Ganho/Perda
+    const abs = Math.abs(parseFloat((valor || "").replace(",", ".")));
+    if (isNaN(abs)) return;
+    const valorFinal = sinal === "perda" ? -abs : abs;
+    if (onAdd(diaISO, nome, String(valorFinal))) {
       setValor("");
       setAtivoOutro("");
     }
@@ -1575,12 +1581,6 @@ function DiaExpandido({
       gap: 10,
       marginTop: 12
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 10
-    }
   }, /*#__PURE__*/React.createElement(Campo, {
     label: "Ativo"
   }, /*#__PURE__*/React.createElement("select", {
@@ -1590,16 +1590,7 @@ function DiaExpandido({
   }, ATIVOS.map(a => /*#__PURE__*/React.createElement("option", {
     key: a,
     value: a
-  }, a)))), /*#__PURE__*/React.createElement(Campo, {
-    label: "Resultado ($)"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    inputMode: "decimal",
-    value: valor,
-    onChange: e => setValor(e.target.value),
-    placeholder: "+150 ou -80",
-    style: inp
-  }))), ativo === "Outro" && /*#__PURE__*/React.createElement(Campo, {
+  }, a)))), ativo === "Outro" && /*#__PURE__*/React.createElement(Campo, {
     label: "Qual ativo?"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
@@ -1607,7 +1598,69 @@ function DiaExpandido({
     onChange: e => setAtivoOutro(e.target.value),
     placeholder: "Ex.: XAUCHF, SPX, SOLUSD…",
     style: inp
-  })), /*#__PURE__*/React.createElement("button", {
+  })), /*#__PURE__*/React.createElement(Campo, {
+    label: "Foi ganho ou perda?"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSinal("ganho"),
+    style: {
+      background: sinal === "ganho" ? "rgba(61,220,132,0.16)" : C.panel2,
+      border: `1.5px solid ${sinal === "ganho" ? C.up : C.line}`,
+      color: sinal === "ganho" ? C.up : C.dim,
+      borderRadius: 10,
+      padding: "11px 0",
+      fontWeight: 700,
+      fontSize: 15,
+      fontFamily: "inherit",
+      cursor: "pointer"
+    }
+  }, "▲ Ganho"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSinal("perda"),
+    style: {
+      background: sinal === "perda" ? "rgba(255,92,122,0.16)" : C.panel2,
+      border: `1.5px solid ${sinal === "perda" ? C.down : C.line}`,
+      color: sinal === "perda" ? C.down : C.dim,
+      borderRadius: 10,
+      padding: "11px 0",
+      fontWeight: 700,
+      fontSize: 15,
+      fontFamily: "inherit",
+      cursor: "pointer"
+    }
+  }, "▼ Perda"))), /*#__PURE__*/React.createElement(Campo, {
+    label: "Valor ($) — só o número"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      position: "absolute",
+      left: 12,
+      top: "50%",
+      transform: "translateY(-50%)",
+      fontFamily: "'JetBrains Mono', monospace",
+      fontWeight: 700,
+      fontSize: 16,
+      color: sinal === "perda" ? C.down : C.up,
+      pointerEvents: "none"
+    }
+  }, sinal === "perda" ? "−" : "+"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    inputMode: "decimal",
+    value: valor,
+    onChange: e => setValor(e.target.value),
+    placeholder: "150",
+    style: {
+      ...inp,
+      paddingLeft: 30
+    }
+  }))), /*#__PURE__*/React.createElement("button", {
     onClick: submeter,
     style: btnPrimario
   }, "Adicionar ao dia")));
