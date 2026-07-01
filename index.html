@@ -1478,7 +1478,7 @@ function PainelMesa({
     cor: "#FFB454",
     txt: "Perda dia"
   }), mesa.regras.perdaTotalPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
-    cor: "#FF5C7A",
+    cor: "#E11D48",
     txt: "Quebra"
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -2628,7 +2628,7 @@ function Estatisticas({
     cor: "#FFB454",
     txt: "Perda dia"
   }), mesa.regras.perdaTotalPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
-    cor: "#FF5C7A",
+    cor: "#E11D48",
     txt: "Quebra"
   })))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -3014,8 +3014,8 @@ function GraficoComObjetivos({
   const subiu = saldoAtual >= saldoInicial;
   const cLinha = subiu ? cor : "#FF7A90";
 
-  // rótulos de valor à esquerda (4 níveis)
-  const niveis = [max, min + span * 0.66, min + span * 0.33, min].map(v => ({
+  // rótulos de valor à esquerda (5 níveis, mais próximos)
+  const niveis = [max, min + span * 0.75, min + span * 0.5, min + span * 0.25, min].map(v => ({
     v,
     y: Y(v)
   }));
@@ -3032,17 +3032,18 @@ function GraficoComObjetivos({
     x2: w - padR,
     y2: Y(val),
     stroke: corL,
-    strokeWidth: "1.3",
-    strokeDasharray: "5 4",
-    opacity: "0.85"
+    strokeWidth: "0.8",
+    strokeDasharray: "2 2.5",
+    opacity: "0.9"
   }), /*#__PURE__*/React.createElement("text", {
     x: alinhaDir ? w - padR : padL + 2,
     y: Y(val) - 3,
     fill: corL,
-    fontSize: "8.5",
+    fontSize: "8",
     fontFamily: "Inter, sans-serif",
-    fontWeight: "600",
-    textAnchor: alinhaDir ? "end" : "start"
+    fontWeight: "700",
+    textAnchor: alinhaDir ? "end" : "start",
+    opacity: "0.95"
   }, rotulo));
   return /*#__PURE__*/React.createElement("svg", {
     width: "100%",
@@ -3085,15 +3086,15 @@ function GraficoComObjetivos({
     y1: n.y,
     x2: w - padR,
     y2: n.y,
-    stroke: "rgba(255,255,255,0.05)",
-    strokeWidth: "1"
+    stroke: "rgba(255,255,255,0.04)",
+    strokeWidth: "0.6"
   }), /*#__PURE__*/React.createElement("text", {
     x: padL,
     y: n.y - 2,
     fill: "#5A6478",
-    fontSize: "8",
+    fontSize: "7.5",
     fontFamily: "'JetBrains Mono', monospace"
-  }, fmtK(n.v)))), linhaObj(metaVal, "#4ADE80", "META", true), linhaObj(perdaDiaVal, "#FFB454", "PERDA DIA", true), linhaObj(quebraVal, "#FF5C7A", "QUEBRA", false), /*#__PURE__*/React.createElement("path", {
+  }, fmtK(n.v)))), linhaObj(metaVal, "#4ADE80", "META", true), linhaObj(perdaDiaVal, "#FFB454", "PERDA DIA", true), linhaObj(quebraVal, "#E11D48", "QUEBRA", false), /*#__PURE__*/React.createElement("path", {
     d: area,
     fill: `url(#${gid}-fill)`
   }), /*#__PURE__*/React.createElement("path", {
