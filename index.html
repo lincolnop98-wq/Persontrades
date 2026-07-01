@@ -1048,7 +1048,7 @@ function EcraMesa({
   : eur;
 
   // abas visíveis conforme o tipo
-  const abas = ehPessoal ? [["registar", "Registar"], ["saques", "Saques"], ["conta", "Conta"]] : [["painel", "Painel"], ["registar", "Registar"], ["saques", "Saques"], ["regras", "Regras"]];
+  const abas = ehPessoal ? [["registar", "Registar"], ["saques", "Saques"], ["estatisticas", "Stats"], ["conta", "Conta"]] : [["painel", "Painel"], ["registar", "Registar"], ["estatisticas", "Stats"], ["saques", "Saques"], ["regras", "Regras"]];
   return /*#__PURE__*/React.createElement("div", {
     style: {
       minHeight: "100vh",
@@ -1110,6 +1110,10 @@ function EcraMesa({
     usd: fmt,
     onUpdate: onUpdate,
     ct: ct
+  }), aba === "estatisticas" && /*#__PURE__*/React.createElement(Estatisticas, {
+    mesa: mesa,
+    usd: fmt,
+    ct: ct
   }), aba === "saques" && /*#__PURE__*/React.createElement(Saques, {
     mesa: mesa,
     usd: fmt,
@@ -1128,40 +1132,89 @@ function EcraMesa({
     onUpdate: onUpdate,
     onRemover: onRemover,
     ct: ct
-  })), /*#__PURE__*/React.createElement("nav", {
+  })), aba !== "registar" && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setAba("registar"),
+    "aria-label": "Registar trade",
+    style: {
+      position: "fixed",
+      right: "max(20px, calc(50% - 300px + 20px))",
+      bottom: "calc(84px + env(safe-area-inset-bottom))",
+      width: 56,
+      height: 56,
+      borderRadius: 18,
+      border: "none",
+      background: `linear-gradient(150deg, ${ct.cyan}, ${ct.acc2 || ct.cyan})`,
+      color: ct.inkBtn || "#0A1428",
+      display: "grid",
+      placeItems: "center",
+      cursor: "pointer",
+      boxShadow: `0 10px 30px ${ct.cyan}44, inset 0 1px 0 rgba(255,255,255,0.3)`,
+      zIndex: 6
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "26",
+    height: "26",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.6",
+    strokeLinecap: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 5v14M5 12h14"
+  }))), /*#__PURE__*/React.createElement("nav", {
     style: {
       position: "fixed",
       bottom: 0,
       left: 0,
       right: 0,
-      background: "rgba(10,13,20,0.8)",
-      backdropFilter: "blur(16px)",
-      WebkitBackdropFilter: "blur(16px)",
+      background: "rgba(10,13,20,0.82)",
+      backdropFilter: "blur(18px)",
+      WebkitBackdropFilter: "blur(18px)",
       borderTop: `1px solid ${C.line}`,
       display: "grid",
       gridTemplateColumns: `repeat(${abas.length}, 1fr)`,
-      padding: "8px 8px calc(8px + env(safe-area-inset-bottom))",
+      padding: "9px 8px calc(9px + env(safe-area-inset-bottom))",
       gap: 4,
       maxWidth: 600,
       margin: "0 auto"
     }
-  }, abas.map(([id, nome]) => /*#__PURE__*/React.createElement("button", {
-    key: id,
-    onClick: () => setAba(id),
+  }, abas.map(([id, nome]) => {
+    const on = aba === id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: id,
+      onClick: () => setAba(id),
+      style: {
+        background: "transparent",
+        border: "none",
+        color: on ? ct.cyan : C.dim,
+        borderRadius: 10,
+        padding: "5px 0 3px",
+        fontSize: 10.5,
+        fontWeight: 600,
+        fontFamily: "inherit",
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 3,
+        position: "relative"
+      }
+    }, /*#__PURE__*/React.createElement(IconeAba, {
+      id: id,
+      cor: on ? ct.cyan : C.dim
+    }), nome, on && /*#__PURE__*/React.createElement("span", {
+      style: {
+        position: "absolute",
+        top: -9,
+        width: 22,
+        height: 3,
+        borderRadius: 3,
+        background: ct.cyan
+      }
+    }));
+  })), /*#__PURE__*/React.createElement("div", {
     style: {
-      background: aba === id ? ct.cyanDim : "transparent",
-      border: aba === id ? `1px solid ${ct.cyan}55` : "1px solid transparent",
-      color: aba === id ? ct.cyan : C.dim,
-      borderRadius: 9,
-      padding: "9px 0",
-      fontSize: 13,
-      fontWeight: 600,
-      fontFamily: "inherit",
-      cursor: "pointer"
-    }
-  }, nome))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 64
+      height: 68
     }
   }));
 }
@@ -1243,6 +1296,69 @@ function ContaPessoalDef({
       justifySelf: "center"
     }
   }, "Eliminar esta conta"));
+}
+
+/* ---------- ícones das abas (SVG, traço) ---------- */
+function IconeAba({
+  id,
+  cor
+}) {
+  const p = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: cor,
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  };
+  switch (id) {
+    case "painel":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+        d: "M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"
+      }));
+    case "registar":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("rect", {
+        x: "3",
+        y: "4",
+        width: "18",
+        height: "18",
+        rx: "2"
+      }), /*#__PURE__*/React.createElement("path", {
+        d: "M16 2v4M8 2v4M3 10h18"
+      }));
+    case "saques":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("rect", {
+        x: "2",
+        y: "6",
+        width: "20",
+        height: "14",
+        rx: "2"
+      }), /*#__PURE__*/React.createElement("path", {
+        d: "M16 12h.01M2 10h20"
+      }));
+    case "regras":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+        d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+      }));
+    case "estatisticas":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+        d: "M3 3v18h18"
+      }), /*#__PURE__*/React.createElement("path", {
+        d: "M7 14l4-4 3 3 5-6"
+      }));
+    case "conta":
+      return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("circle", {
+        cx: "12",
+        cy: "8",
+        r: "4"
+      }), /*#__PURE__*/React.createElement("path", {
+        d: "M4 21a8 8 0 0116 0"
+      }));
+    default:
+      return null;
+  }
 }
 
 /* ---------- Painel: métricas-chave + gestão de risco ---------- */
@@ -2259,6 +2375,395 @@ function RegrasMesa({
       justifySelf: "center"
     }
   }, "Eliminar esta mesa"));
+}
+
+/* ============================================================
+   ESTATÍSTICAS — win rate, payoff, expectativa, lucro por ativo
+   ============================================================ */
+function Estatisticas({
+  mesa,
+  usd,
+  ct
+}) {
+  ct = ct || C;
+  const dias = diasDaFase(mesa);
+
+  // reunir todos os trades da etapa, por ordem de data
+  const datas = Object.keys(dias).sort();
+  const trades = [];
+  for (const d of datas) for (const t of dias[d] || []) trades.push({
+    ...t,
+    data: d
+  });
+  const n = trades.length;
+  const ganhos = trades.filter(t => t.resultado > 0);
+  const perdas = trades.filter(t => t.resultado < 0);
+  const somaGanhos = ganhos.reduce((a, t) => a + t.resultado, 0);
+  const somaPerdas = Math.abs(perdas.reduce((a, t) => a + t.resultado, 0));
+  const winRate = n ? ganhos.length / n * 100 : 0;
+  const mediaGanho = ganhos.length ? somaGanhos / ganhos.length : 0;
+  const mediaPerda = perdas.length ? somaPerdas / perdas.length : 0;
+  const payoff = mediaPerda ? mediaGanho / mediaPerda : 0; // R:R médio
+  const profitFactor = somaPerdas ? somaGanhos / somaPerdas : ganhos.length ? Infinity : 0;
+  // expectativa por trade
+  const expectativa = n ? winRate / 100 * mediaGanho - (1 - winRate / 100) * mediaPerda : 0;
+  const maiorGanho = ganhos.length ? Math.max(...ganhos.map(t => t.resultado)) : 0;
+  const maiorPerda = perdas.length ? Math.min(...perdas.map(t => t.resultado)) : 0;
+  const lucroLiquido = trades.reduce((a, t) => a + t.resultado, 0);
+
+  // melhor / pior sequência (por trade)
+  let seqG = 0,
+    maxSeqG = 0,
+    seqP = 0,
+    maxSeqP = 0;
+  for (const t of trades) {
+    if (t.resultado > 0) {
+      seqG++;
+      maxSeqG = Math.max(maxSeqG, seqG);
+      seqP = 0;
+    } else if (t.resultado < 0) {
+      seqP++;
+      maxSeqP = Math.max(maxSeqP, seqP);
+      seqG = 0;
+    }
+  }
+
+  // lucro por ativo
+  const porAtivo = {};
+  for (const t of trades) porAtivo[t.ativo] = (porAtivo[t.ativo] || 0) + t.resultado;
+  const ativosOrdenados = Object.entries(porAtivo).sort((a, b) => b[1] - a[1]);
+  const melhorAtivo = ativosOrdenados[0];
+
+  // curva de saldo acumulado (por trade) para o gráfico
+  let acc = mesa.saldoInicial;
+  const curva = [mesa.saldoInicial];
+  for (const t of trades) {
+    acc += t.resultado;
+    curva.push(acc);
+  }
+  if (n === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        textAlign: "center",
+        color: C.dim,
+        padding: "40px 20px",
+        fontSize: 14
+      }
+    }, "Ainda não há trades nesta etapa. Regista alguns e as estatísticas aparecem aqui — win rate, payoff, expectativa e muito mais.");
+  }
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gap: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: cardVidro(ct)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: C.dim,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em"
+    }
+  }, "Evolução do saldo"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "baseline",
+      gap: 10,
+      margin: "4px 0 12px"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontSize: 24,
+      fontWeight: 700
+    }
+  }, usd(acc)), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontWeight: 700,
+      fontSize: 14,
+      color: lucroLiquido >= 0 ? C.up : C.down
+    }
+  }, pct(lucroLiquido / mesa.saldoInicial * 100))), /*#__PURE__*/React.createElement(GraficoLinha, {
+    valores: curva,
+    cor: ct.cyan
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Win rate",
+    valor: `${winRate.toFixed(0)}%`,
+    destaque: true,
+    cor: ct.cyan
+  }, /*#__PURE__*/React.createElement(Anel, {
+    pct: winRate,
+    cor: ct.cyan
+  })), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Lucro líquido",
+    valor: usd(lucroLiquido),
+    cor: lucroLiquido >= 0 ? C.up : C.down
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Payoff (R:R médio)",
+    valor: payoff ? payoff.toFixed(2) : "—"
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Profit factor",
+    valor: profitFactor === Infinity ? "∞" : profitFactor.toFixed(2)
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Expectativa/trade",
+    valor: usd(expectativa),
+    cor: expectativa >= 0 ? C.up : C.down
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Total de trades",
+    valor: `${n}`
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Média de ganho",
+    valor: usd(mediaGanho),
+    cor: C.up
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Média de perda",
+    valor: usd(-mediaPerda),
+    cor: C.down
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Maior ganho",
+    valor: usd(maiorGanho),
+    cor: C.up
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Maior perda",
+    valor: usd(maiorPerda),
+    cor: C.down
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Melhor sequência",
+    valor: `${maxSeqG} ${maxSeqG === 1 ? "ganho" : "ganhos"}`,
+    cor: C.up
+  }), /*#__PURE__*/React.createElement(MetricaCard, {
+    ct: ct,
+    rotulo: "Pior sequência",
+    valor: `${maxSeqP} ${maxSeqP === 1 ? "perda" : "perdas"}`,
+    cor: C.down
+  })), ativosOrdenados.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: cardVidro(ct)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      letterSpacing: "0.07em",
+      textTransform: "uppercase",
+      color: C.dim,
+      marginBottom: 12
+    }
+  }, "Lucro por ativo"), ativosOrdenados.map(([ativo, val]) => {
+    const max = Math.max(...ativosOrdenados.map(([, v]) => Math.abs(v)));
+    const larg = max ? Math.abs(val) / max * 100 : 0;
+    return /*#__PURE__*/React.createElement("div", {
+      key: ativo,
+      style: {
+        marginBottom: 10
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: 13,
+        marginBottom: 4
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600
+      }
+    }, ativo), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "'JetBrains Mono', monospace",
+        fontWeight: 700,
+        color: val >= 0 ? C.up : C.down
+      }
+    }, usd(val))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 6,
+        borderRadius: 4,
+        background: "rgba(255,255,255,0.06)",
+        overflow: "hidden"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: `${larg}%`,
+        height: "100%",
+        background: val >= 0 ? C.up : C.down,
+        borderRadius: 4
+      }
+    })));
+  }), melhorAtivo && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12.5,
+      color: C.dim,
+      marginTop: 10
+    }
+  }, "Ativo mais lucrativo: ", /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: ct.cyan
+    }
+  }, melhorAtivo[0]), " (", usd(melhorAtivo[1]), ")")), /*#__PURE__*/React.createElement("p", {
+    style: {
+      fontSize: 11.5,
+      color: C.dim,
+      lineHeight: 1.5,
+      margin: 0
+    }
+  }, "Estatísticas dos trades desta etapa. O payoff é o teu ganho médio a dividir pela perda média (R:R). A expectativa é o que ganhas, em média, por cada trade."));
+}
+
+/* mini-componentes das estatísticas */
+function cardVidro(ct) {
+  return {
+    background: "linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+    border: `1px solid ${C.line}`,
+    borderRadius: 16,
+    padding: 16
+  };
+}
+function MetricaCard({
+  rotulo,
+  valor,
+  cor,
+  destaque,
+  children,
+  ct
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...cardVidro(ct),
+      padding: "13px 14px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: C.dim,
+      textTransform: "uppercase",
+      letterSpacing: "0.05em"
+    }
+  }, rotulo), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "'JetBrains Mono', monospace",
+      fontWeight: 700,
+      fontSize: destaque ? 20 : 17,
+      color: cor || C.ink,
+      marginTop: 3
+    }
+  }, valor)), children);
+}
+
+/* anel de percentagem (win rate) */
+function Anel({
+  pct,
+  cor
+}) {
+  const r = 15;
+  const circ = 2 * Math.PI * r;
+  const off = circ * (1 - Math.max(0, Math.min(100, pct)) / 100);
+  return /*#__PURE__*/React.createElement("svg", {
+    width: "38",
+    height: "38",
+    viewBox: "0 0 38 38"
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "19",
+    cy: "19",
+    r: r,
+    fill: "none",
+    stroke: "rgba(255,255,255,0.1)",
+    strokeWidth: "4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "19",
+    cy: "19",
+    r: r,
+    fill: "none",
+    stroke: cor,
+    strokeWidth: "4",
+    strokeLinecap: "round",
+    strokeDasharray: circ,
+    strokeDashoffset: off,
+    transform: "rotate(-90 19 19)"
+  }));
+}
+
+/* gráfico de linha simples (curva de saldo) */
+function GraficoLinha({
+  valores,
+  cor
+}) {
+  if (!valores || valores.length < 2) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 90,
+        display: "grid",
+        placeItems: "center",
+        color: C.dim,
+        fontSize: 12
+      }
+    }, "Poucos dados para o gráfico");
+  }
+  const w = 320,
+    h = 90,
+    pad = 4;
+  const min = Math.min(...valores),
+    max = Math.max(...valores);
+  const span = max - min || 1;
+  const pts = valores.map((v, i) => {
+    const x = pad + i / (valores.length - 1) * (w - pad * 2);
+    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+    return [x, y];
+  });
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const area = `${d} L${pts[pts.length - 1][0].toFixed(1)} ${h} L${pts[0][0].toFixed(1)} ${h} Z`;
+  const subiu = valores[valores.length - 1] >= valores[0];
+  const c = subiu ? cor : "#FF7A90";
+  return /*#__PURE__*/React.createElement("svg", {
+    width: "100%",
+    height: h,
+    viewBox: `0 0 ${w} ${h}`,
+    preserveAspectRatio: "none"
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "gl",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: c,
+    stopOpacity: "0.25"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: c,
+    stopOpacity: "0"
+  }))), /*#__PURE__*/React.createElement("path", {
+    d: area,
+    fill: "url(#gl)"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: d,
+    fill: "none",
+    stroke: c,
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }));
 }
 
 /* ============================================================
