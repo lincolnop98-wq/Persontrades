@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-PT"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0A0E17"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes"><title>PersonTrades</title>
+<meta name="theme-color" content="#0B0D10"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes"><title>Norte</title>
 <link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
-<style>html,body{margin:0;padding:0;background:#0A0E17}</style></head>
+<style>html,body{margin:0;padding:0;background:#0B0D10}</style></head>
 <body><div id="root"></div>
 <script>/**
  * @license React
@@ -330,18 +330,18 @@ const STORAGE_KEY = "persontrades:v1";
 
 /* ---------- paleta: "terminal de trading", distinta do PersonTurnos ---------- */
 const C = {
-  bg: "#0A0E17",
-  panel: "#111725",
-  panel2: "#161D2E",
-  line: "#212A40",
-  ink: "#E7ECF5",
-  dim: "#7E88A0",
-  cyan: "#37D4CF",
-  // acento principal (frio, "mercado")
-  cyanDim: "rgba(55,212,207,0.12)",
-  up: "#3DDC84",
+  bg: "#0B0D10",
+  panel: "#0F131B",
+  panel2: "#141926",
+  line: "#212A3E",
+  ink: "#EAEFFB",
+  dim: "#8A94A6",
+  cyan: "#7AA2FF",
+  // acento principal Norte (azul bússola)
+  cyanDim: "rgba(122,162,255,0.13)",
+  up: "#4ADE80",
   // verde lucro
-  down: "#FF5C7A",
+  down: "#FF7A90",
   // vermelho perda
   warn: "#FFB454",
   // âmbar aviso
@@ -612,7 +612,7 @@ function PersonTrades() {
       paddingBottom: 40
     }
   }, /*#__PURE__*/React.createElement("style", null, `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Sora:wght@600;700;800&display=swap');
         * { box-sizing: border-box; }
         input:focus, select:focus, button:focus-visible { outline: 2px solid ${C.cyan}; outline-offset: 1px; }
         input, select { color-scheme: dark; }
@@ -676,11 +676,7 @@ function EcraInicio({
   const totalSaques = contas.reduce((acc, c) => acc + c.mesas.reduce((a, m) => a + (m.saques || []).reduce((s, x) => s + x.valor, 0), 0), 0);
   const props = contas.filter(c => c.tipo === "prop");
   const pessoais = contas.filter(c => c.tipo === "pessoal");
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Cabecalho, {
-    titulo: "PERSON",
-    destaque: "TRADES",
-    sub: "Diário de trading"
-  }), /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Cabecalho, null), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: "0 16px",
       maxWidth: 600,
@@ -2369,41 +2365,43 @@ function Cabecalho({
     style: {
       display: "flex",
       alignItems: "center",
-      gap: 10
+      gap: 12
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: 34,
-      height: 34,
-      borderRadius: 9,
-      background: C.cyanDim,
-      border: `1px solid ${C.cyan}55`,
+      width: 40,
+      height: 40,
+      borderRadius: 11,
+      background: "#0C1018",
+      border: `1px solid ${C.cyan}44`,
       display: "grid",
-      placeItems: "center",
-      fontFamily: "'JetBrains Mono', monospace",
-      fontWeight: 700,
-      color: C.cyan,
-      fontSize: 18
+      placeItems: "center"
     }
-  }, "P"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "26",
+    height: "26",
+    viewBox: "0 0 72 72",
+    fill: "none"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M36 18l4 14 14 4-14 4-4 14-4-14-14-4 14-4 4-14z",
+    fill: C.cyan
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
-      fontWeight: 700,
-      fontSize: 22,
+      fontFamily: "'Sora', 'Inter', sans-serif",
+      fontWeight: 800,
+      fontSize: 24,
       letterSpacing: "-0.01em",
       lineHeight: 1
     }
-  }, titulo, /*#__PURE__*/React.createElement("span", {
+  }, "Norte"), /*#__PURE__*/React.createElement("div", {
     style: {
-      color: C.cyan
-    }
-  }, destaque)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
+      fontSize: 10.5,
       color: C.dim,
-      letterSpacing: "0.1em",
-      textTransform: "uppercase"
+      letterSpacing: "0.14em",
+      textTransform: "uppercase",
+      marginTop: 3
     }
-  }, sub))));
+  }, "plano · rota · disciplina"))));
 }
 function CartaoNumero({
   rotulo,
@@ -2544,7 +2542,7 @@ const inp = {
 };
 const btnPrimario = {
   background: C.cyan,
-  color: "#04201F",
+  color: "#0A1428",
   border: "none",
   borderRadius: 11,
   padding: "12px 16px",
