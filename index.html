@@ -328,7 +328,7 @@ if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.s
 
 const STORAGE_KEY = "persontrades:v1";
 
-/* ---------- paleta: "terminal de trading", distinta do PersonTurnos ---------- */
+/* ---------- paleta base (fundo/vidro comuns a todos os temas) ---------- */
 const C = {
   bg: "#0B0D10",
   panel: "#0F131B",
@@ -337,16 +337,104 @@ const C = {
   ink: "#EAEFFB",
   dim: "#8A94A6",
   cyan: "#7AA2FF",
-  // acento principal Norte (azul bússola)
+  // acento principal Norte (azul bússola) — default
   cyanDim: "rgba(122,162,255,0.13)",
   up: "#4ADE80",
-  // verde lucro
+  // verde lucro (igual em todos os temas)
   down: "#FF7A90",
-  // vermelho perda
+  // vermelho perda (igual em todos os temas)
   warn: "#FFB454",
   // âmbar aviso
   violet: "#8B8CF0"
 };
+
+/* ---------- os 6 temas de cor das mesas (imersivos) ----------
+   Cada tema define o acento (acc), o acento escuro para gradientes (acc2),
+   uma versão translúcida (accDim), e os stops do fundo imersivo (bg1/bg2). */
+const TEMAS = {
+  norte: {
+    nome: "Azul · Norte",
+    acc: "#7AA2FF",
+    acc2: "#5B8DEF",
+    accDim: "rgba(122,162,255,0.13)",
+    bg1: "#1B2C4F",
+    bg2: "#122038",
+    inkBtn: "#0A1428"
+  },
+  ouro: {
+    nome: "Dourado · Ouro",
+    acc: "#E9B44C",
+    acc2: "#C79030",
+    accDim: "rgba(233,180,76,0.13)",
+    bg1: "#3A2E12",
+    bg2: "#2A2109",
+    inkBtn: "#241A06"
+  },
+  rubi: {
+    nome: "Vermelho · Rubi",
+    acc: "#FF6B7D",
+    acc2: "#D9455A",
+    accDim: "rgba(255,107,125,0.13)",
+    bg1: "#3E1622",
+    bg2: "#2C0F19",
+    inkBtn: "#2A0810"
+  },
+  esmeralda: {
+    nome: "Verde · Esmeralda",
+    acc: "#34D399",
+    acc2: "#25A87C",
+    accDim: "rgba(52,211,153,0.13)",
+    bg1: "#123A2E",
+    bg2: "#0C2A21",
+    inkBtn: "#052018"
+  },
+  ametista: {
+    nome: "Roxo · Ametista",
+    acc: "#A78BFA",
+    acc2: "#8B6FE0",
+    accDim: "rgba(167,139,250,0.13)",
+    bg1: "#2C1E4A",
+    bg2: "#21163A",
+    inkBtn: "#160B2A"
+  },
+  ambar: {
+    nome: "Laranja · Âmbar",
+    acc: "#FB923C",
+    acc2: "#E07A28",
+    accDim: "rgba(251,146,60,0.13)",
+    bg1: "#3E2A12",
+    bg2: "#2E1E0A",
+    inkBtn: "#281A06"
+  }
+};
+const TEMA_ORDEM = ["norte", "ouro", "rubi", "esmeralda", "ametista", "ambar"];
+
+/* devolve o objeto de tema (com fallback para norte) */
+function tema(id) {
+  return TEMAS[id] || TEMAS.norte;
+}
+
+/* cria uma paleta "C" adaptada ao tema — mantém bg/vidro comuns,
+   troca só o acento. Assim os componentes que usam C.cyan/C.cyanDim
+   passam a usar a cor do tema sem alterar nada no resto do código. */
+function paletaTema(temaId) {
+  const t = tema(temaId);
+  return {
+    ...C,
+    cyan: t.acc,
+    cyanDim: t.accDim,
+    acc2: t.acc2,
+    inkBtn: t.inkBtn,
+    bg1: t.bg1,
+    bg2: t.bg2
+  };
+}
+
+/* fundo imersivo (gradiente) para um tema */
+function fundoTema(temaId) {
+  const t = tema(temaId);
+  return `radial-gradient(120% 80% at 12% -8%, ${t.bg1} 0%, transparent 55%), radial-gradient(120% 90% at 100% 0%, ${t.bg2} 0%, transparent 50%), linear-gradient(180deg, #0A0D14 0%, #080A10 100%)`;
+}
 
 /* ---------- modelos de prop firms (editáveis) ---------- */
 /* Hantec: valores confirmados na página oficial de regras (htrader.hmarkets.com/programs/rules)
@@ -539,7 +627,7 @@ function PersonTrades() {
   }).format((v || 0) * taxaEur)}`;
 
   /* ---- operações sobre o estado ---- */
-  function addConta(nome, tipo, saldo, moeda) {
+  function addConta(nome, tipo, saldo, moeda, temaConta) {
     const novaConta = {
       id: uid(),
       nome,
@@ -556,6 +644,7 @@ function PersonTrades() {
         faseAtual: 1,
         pessoal: true,
         moeda: moeda || "USD",
+        tema: temaConta || "esmeralda",
         dias: {},
         diasPorFase: {},
         fasesAprovadas: [],
@@ -773,11 +862,13 @@ function SeccaoContas({
 
     // conta pessoal: cartão único clicável que abre direto o registo
     if (ehPessoal && mesaP) {
+      const tmP = tema(mesaP.tema);
       return /*#__PURE__*/React.createElement("div", {
         key: c.id,
         style: {
           background: C.panel,
           border: `1px solid ${C.line}`,
+          borderLeft: `3px solid ${tmP.acc}`,
           borderRadius: 14,
           overflow: "hidden"
         }
@@ -878,6 +969,7 @@ function SeccaoContas({
       }
     }, "×"))), c.mesas.map(m => {
       const r = pnlMesa(m);
+      const tm = tema(m.tema);
       return /*#__PURE__*/React.createElement("button", {
         key: m.id,
         onClick: () => onAbrirMesa(c.id, m.id),
@@ -889,6 +981,7 @@ function SeccaoContas({
           background: "transparent",
           border: "none",
           borderTop: `1px solid ${C.line}`,
+          borderLeft: `3px solid ${tm.acc}`,
           padding: "12px 14px",
           cursor: "pointer",
           color: C.ink,
@@ -943,6 +1036,10 @@ function EcraMesa({
   const [aba, setAba] = useState(ehPessoal ? "registar" : "painel");
   const r = useMemo(() => pnlMesa(mesa), [mesa]);
 
+  // paleta e fundo do tema desta mesa
+  const ct = paletaTema(mesa.tema);
+  const fundo = fundoTema(mesa.tema);
+
   // formatador de moeda da mesa: conta pessoal usa a sua moeda; prop firm usa $
   const fmt = ehPessoal ? v => fmtMoeda(v, mesa.moeda) : usd;
   // equivalente na outra moeda (subtil)
@@ -952,9 +1049,16 @@ function EcraMesa({
 
   // abas visíveis conforme o tipo
   const abas = ehPessoal ? [["registar", "Registar"], ["saques", "Saques"], ["conta", "Conta"]] : [["painel", "Painel"], ["registar", "Registar"], ["saques", "Saques"], ["regras", "Regras"]];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  return /*#__PURE__*/React.createElement("div", {
     style: {
-      background: C.panel,
+      minHeight: "100vh",
+      background: fundo
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "rgba(15,19,27,0.5)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
       borderBottom: `1px solid ${C.line}`,
       padding: "14px 16px"
     }
@@ -963,7 +1067,7 @@ function EcraMesa({
     style: {
       ...btnTexto,
       paddingLeft: 0,
-      color: C.cyan
+      color: ct.cyan
     }
   }, "‹ ", conta.nome), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -999,33 +1103,40 @@ function EcraMesa({
     mesa: mesa,
     r: r,
     usd: usd,
-    eur: eur
+    eur: eur,
+    ct: ct
   }), aba === "registar" && /*#__PURE__*/React.createElement(RegistarDias, {
     mesa: mesa,
     usd: fmt,
-    onUpdate: onUpdate
+    onUpdate: onUpdate,
+    ct: ct
   }), aba === "saques" && /*#__PURE__*/React.createElement(Saques, {
     mesa: mesa,
     usd: fmt,
     eur: eurConv,
-    onUpdate: onUpdate
+    onUpdate: onUpdate,
+    ct: ct
   }), aba === "regras" && !ehPessoal && /*#__PURE__*/React.createElement(RegrasMesa, {
     mesa: mesa,
     usd: usd,
     onUpdate: onUpdate,
-    onRemover: onRemover
+    onRemover: onRemover,
+    ct: ct
   }), aba === "conta" && ehPessoal && /*#__PURE__*/React.createElement(ContaPessoalDef, {
     mesa: mesa,
     fmt: fmt,
     onUpdate: onUpdate,
-    onRemover: onRemover
+    onRemover: onRemover,
+    ct: ct
   })), /*#__PURE__*/React.createElement("nav", {
     style: {
       position: "fixed",
       bottom: 0,
       left: 0,
       right: 0,
-      background: C.panel,
+      background: "rgba(10,13,20,0.8)",
+      backdropFilter: "blur(16px)",
+      WebkitBackdropFilter: "blur(16px)",
       borderTop: `1px solid ${C.line}`,
       display: "grid",
       gridTemplateColumns: `repeat(${abas.length}, 1fr)`,
@@ -1038,9 +1149,9 @@ function EcraMesa({
     key: id,
     onClick: () => setAba(id),
     style: {
-      background: aba === id ? C.cyanDim : "transparent",
-      border: aba === id ? `1px solid ${C.cyan}55` : "1px solid transparent",
-      color: aba === id ? C.cyan : C.dim,
+      background: aba === id ? ct.cyanDim : "transparent",
+      border: aba === id ? `1px solid ${ct.cyan}55` : "1px solid transparent",
+      color: aba === id ? ct.cyan : C.dim,
       borderRadius: 9,
       padding: "9px 0",
       fontSize: 13,
@@ -1060,8 +1171,10 @@ function ContaPessoalDef({
   mesa,
   fmt,
   onUpdate,
-  onRemover
+  onRemover,
+  ct
 }) {
+  ct = ct || C;
   const num = v => isNaN(parseFloat(v)) ? 0 : parseFloat(v);
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1117,7 +1230,12 @@ function ContaPessoalDef({
     value: "USD"
   }, "$ USD"), /*#__PURE__*/React.createElement("option", {
     value: "EUR"
-  }, "€ EUR"))))), /*#__PURE__*/React.createElement("button", {
+  }, "€ EUR")))), /*#__PURE__*/React.createElement(SeletorTema, {
+    valor: mesa.tema || "esmeralda",
+    onEscolher: t => onUpdate({
+      tema: t
+    })
+  })), /*#__PURE__*/React.createElement("button", {
     onClick: onRemover,
     style: {
       ...btnTexto,
@@ -1132,8 +1250,10 @@ function PainelMesa({
   mesa,
   r,
   usd,
-  eur
+  eur,
+  ct
 }) {
+  ct = ct || C;
   const margemTotal = r.saldoAtual - r.limiteTotal; // quanto falta para quebrar
   const margemTotalPct = margemTotal / mesa.saldoInicial * 100;
   const progresso = mesa.regras.targetPct[mesa.faseAtual - 1] || 0;
@@ -1204,11 +1324,11 @@ function PainelMesa({
     style: {
       fontSize: 13,
       fontWeight: 700,
-      color: C.cyan
+      color: ct.cyan
     }
   }, progPct.toFixed(0), "%")), /*#__PURE__*/React.createElement(Barra, {
     valor: progPct,
-    cor: C.cyan
+    cor: ct.cyan
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12,
@@ -1277,7 +1397,7 @@ function PainelMesa({
     }
   }, usd(riscoDiaValor)), " (", mesa.regras.perdaDiaPct, "%).", /*#__PURE__*/React.createElement("br", null), "Risco conservador sugerido por trade:", " ", /*#__PURE__*/React.createElement("b", {
     style: {
-      color: C.cyan
+      color: ct.cyan
     }
   }, usd(mesa.saldoInicial * 0.005)), " (0,5%).", recuperacao && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     style: {
@@ -1297,8 +1417,10 @@ function PainelMesa({
 function RegistarDias({
   mesa,
   usd,
-  onUpdate
+  onUpdate,
+  ct
 }) {
+  ct = ct || C;
   const dias = diasDaFase(mesa);
   const r = pnlMesa(mesa);
 
@@ -1452,7 +1574,7 @@ function RegistarDias({
     }
   }, /*#__PURE__*/React.createElement(Barra, {
     valor: Math.max(0, Math.min(100, r.pnlPct / alvoPct * 100)),
-    cor: bateuAlvo ? C.up : C.cyan
+    cor: bateuAlvo ? C.up : ct.cyan
   }))), bateuAlvo && /*#__PURE__*/React.createElement("div", {
     style: {
       background: "rgba(61,220,132,0.08)",
@@ -1498,7 +1620,7 @@ function RegistarDias({
     onClick: () => mudarMes(-1),
     style: {
       ...btnTexto,
-      color: C.cyan,
+      color: ct.cyan,
       fontSize: 18
     }
   }, "‹"), /*#__PURE__*/React.createElement("span", {
@@ -1512,7 +1634,7 @@ function RegistarDias({
     onClick: () => mudarMes(1),
     style: {
       ...btnTexto,
-      color: C.cyan,
+      color: ct.cyan,
       fontSize: 18
     }
   }, "›")), /*#__PURE__*/React.createElement("div", {
@@ -1553,8 +1675,8 @@ function RegistarDias({
       style: {
         aspectRatio: "1",
         borderRadius: 9,
-        border: aberto ? `1.5px solid ${C.cyan}` : temTrade ? `1px solid ${totalDia >= 0 ? C.up + "66" : C.down + "66"}` : `1px solid ${C.line}`,
-        background: aberto ? C.cyanDim : temTrade ? totalDia >= 0 ? "rgba(61,220,132,0.10)" : "rgba(255,92,122,0.10)" : C.panel2,
+        border: aberto ? `1.5px solid ${ct.cyan}` : temTrade ? `1px solid ${totalDia >= 0 ? C.up + "66" : C.down + "66"}` : `1px solid ${C.line}`,
+        background: aberto ? ct.cyanDim : temTrade ? totalDia >= 0 ? "rgba(61,220,132,0.10)" : "rgba(255,92,122,0.10)" : C.panel2,
         color: C.ink,
         display: "flex",
         flexDirection: "column",
@@ -1595,7 +1717,8 @@ function RegistarDias({
     usd: usd,
     onAdd: addTrade,
     onRemove: removeTrade,
-    onFechar: () => setDiaAberto(null)
+    onFechar: () => setDiaAberto(null),
+    ct: ct
   }), (mesa.historico || []).length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.panel,
@@ -1646,8 +1769,10 @@ function DiaExpandido({
   usd,
   onAdd,
   onRemove,
-  onFechar
+  onFechar,
+  ct
 }) {
+  ct = ct || C;
   const [ativo, setAtivo] = useState(ATIVOS[0]);
   const [ativoOutro, setAtivoOutro] = useState("");
   const [valor, setValor] = useState("");
@@ -1669,7 +1794,7 @@ function DiaExpandido({
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: C.panel,
-      border: `1.5px solid ${C.cyan}66`,
+      border: `1.5px solid ${ct.cyan}66`,
       borderRadius: 14,
       padding: 16
     }
@@ -1854,7 +1979,11 @@ function DiaExpandido({
     }
   }))), /*#__PURE__*/React.createElement("button", {
     onClick: submeter,
-    style: btnPrimario
+    style: {
+      ...btnPrimario,
+      background: ct.cyan,
+      color: ct.inkBtn || "#0A1428"
+    }
   }, "Adicionar ao dia")));
 }
 
@@ -1863,8 +1992,10 @@ function Saques({
   mesa,
   usd,
   eur,
-  onUpdate
+  onUpdate,
+  ct
 }) {
+  ct = ct || C;
   const [data, setData] = useState(hojeISO());
   const [valor, setValor] = useState("");
   const saques = mesa.saques || [];
@@ -1895,7 +2026,7 @@ function Saques({
     rotulo: "Total sacado nesta mesa",
     valor: usd(total),
     sub: eur(total),
-    cor: C.cyan
+    cor: ct.cyan
   }), /*#__PURE__*/React.createElement("section", {
     style: {
       background: C.panel,
@@ -1986,8 +2117,10 @@ function RegrasMesa({
   mesa,
   usd,
   onUpdate,
-  onRemover
+  onRemover,
+  ct
 }) {
+  ct = ct || C;
   const reg = mesa.regras;
   const setReg = patch => onUpdate({
     regras: {
@@ -2102,11 +2235,23 @@ function RegrasMesa({
       trailing: e.target.checked
     }),
     style: {
-      accentColor: C.cyan,
+      accentColor: ct.cyan,
       width: 17,
       height: 17
     }
-  }), "Drawdown trailing (segue o pico de saldo)")), /*#__PURE__*/React.createElement("button", {
+  }), "Drawdown trailing (segue o pico de saldo)")), /*#__PURE__*/React.createElement("section", {
+    style: {
+      background: C.panel,
+      border: `1px solid ${C.line}`,
+      borderRadius: 14,
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement(SeletorTema, {
+    valor: mesa.tema || "norte",
+    onEscolher: t => onUpdate({
+      tema: t
+    })
+  })), /*#__PURE__*/React.createElement("button", {
     onClick: onRemover,
     style: {
       ...btnTexto,
@@ -2167,6 +2312,7 @@ function ModalNovaConta({
   const [tipo, setTipo] = useState("prop");
   const [saldo, setSaldo] = useState("");
   const [moeda, setMoeda] = useState("USD");
+  const [temaConta, setTemaConta] = useState("esmeralda");
   const podeGravar = nome.trim() && (tipo === "prop" || parseFloat((saldo || "").replace(",", ".")) > 0);
   return /*#__PURE__*/React.createElement(Modal, {
     onFechar: onFechar,
@@ -2231,11 +2377,14 @@ function ModalNovaConta({
       margin: "0 0 4px",
       lineHeight: 1.5
     }
-  }, "Serve para conta cent ou normal — mete só o saldo real da conta. Sem etapas nem regras de prop firm; registas os trades direto."), /*#__PURE__*/React.createElement("button", {
+  }, "Serve para conta cent ou normal — mete só o saldo real da conta. Sem etapas nem regras de prop firm; registas os trades direto."), tipo === "pessoal" && /*#__PURE__*/React.createElement(SeletorTema, {
+    valor: temaConta,
+    onEscolher: setTemaConta
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       if (!podeGravar) return;
       const s = parseFloat((saldo || "").replace(",", ".")) || 0;
-      onCriar(nome.trim(), tipo, s, moeda);
+      onCriar(nome.trim(), tipo, s, moeda, temaConta);
     },
     disabled: !podeGravar,
     style: {
@@ -2252,6 +2401,7 @@ function ModalNovaMesa({
   const [programa, setPrograma] = useState("Endurance (3 etapas)");
   const [saldo, setSaldo] = useState(200000);
   const [etiqueta, setEtiqueta] = useState("");
+  const [temaSel, setTemaSel] = useState("norte");
   const progsDisponiveis = Object.keys(MODELOS_FIRMAS[firma]?.programas || {});
   const regrasBase = MODELOS_FIRMAS[firma]?.programas[programa];
   const nomeFirma = MODELOS_FIRMAS[firma]?.nome || "";
@@ -2271,6 +2421,7 @@ function ModalNovaMesa({
       etiqueta: etiqueta.trim() || etiquetaSugerida,
       saldoInicial: parseFloat(saldo) || 0,
       faseAtual: 1,
+      tema: temaSel,
       regras: {
         fases: reg.fases,
         targetPct: [...reg.targetPct],
@@ -2340,10 +2491,68 @@ function ModalNovaMesa({
       color: C.dim,
       lineHeight: 1.6
     }
-  }, regrasBase.fases > 0 ? `${regrasBase.fases} etapas` : "Sem etapas (funded)", " ·", " ", regrasBase.targetPct[0] > 0 ? `alvo ${regrasBase.targetPct[0]}% · ` : "", "perda dia ", regrasBase.perdaDiaPct, "% · perda total ", regrasBase.perdaTotalPct, "%", regrasBase.trailing ? " (trailing)" : " (estático)"), /*#__PURE__*/React.createElement("button", {
+  }, regrasBase.fases > 0 ? `${regrasBase.fases} etapas` : "Sem etapas (funded)", " ·", " ", regrasBase.targetPct[0] > 0 ? `alvo ${regrasBase.targetPct[0]}% · ` : "", "perda dia ", regrasBase.perdaDiaPct, "% · perda total ", regrasBase.perdaTotalPct, "%", regrasBase.trailing ? " (trailing)" : " (estático)"), /*#__PURE__*/React.createElement(SeletorTema, {
+    valor: temaSel,
+    onEscolher: setTemaSel
+  }), /*#__PURE__*/React.createElement("button", {
     onClick: criar,
     style: btnPrimario
   }, "Criar mesa"));
+}
+
+/* ---------- seletor de tema de cor (bolinhas) ---------- */
+function SeletorTema({
+  valor,
+  onEscolher
+}) {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "block",
+      fontSize: 11,
+      letterSpacing: "0.07em",
+      textTransform: "uppercase",
+      color: C.dim,
+      marginBottom: 8,
+      fontWeight: 600
+    }
+  }, "Tema de cor"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      flexWrap: "wrap"
+    }
+  }, TEMA_ORDEM.map(id => {
+    const t = TEMAS[id];
+    const sel = valor === id;
+    return /*#__PURE__*/React.createElement("button", {
+      key: id,
+      onClick: () => onEscolher(id),
+      title: t.nome,
+      style: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        border: sel ? `2px solid ${t.acc}` : `1px solid ${C.line}`,
+        background: `linear-gradient(150deg, ${t.acc}, ${t.acc2})`,
+        cursor: "pointer",
+        boxShadow: sel ? `0 0 0 3px ${t.accDim}` : "none",
+        display: "grid",
+        placeItems: "center",
+        transition: "box-shadow .15s"
+      }
+    }, sel && /*#__PURE__*/React.createElement("svg", {
+      width: "18",
+      height: "18",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: t.inkBtn,
+      strokeWidth: "3",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "M20 6L9 17l-5-5"
+    })));
+  })));
 }
 
 /* ============================================================
