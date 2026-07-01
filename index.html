@@ -1419,19 +1419,7 @@ function PainelMesa({
       position: "relative",
       overflow: "hidden"
     }
-  }, curva.length > 1 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      right: 14,
-      top: 16,
-      width: 120,
-      height: 40,
-      opacity: 0.9
-    }
-  }, /*#__PURE__*/React.createElement(GraficoLinha, {
-    valores: curva,
-    cor: ct.cyan
-  })), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
       color: C.dim,
@@ -1462,7 +1450,37 @@ function PainelMesa({
       fontSize: 13,
       color: r.pnl > 0 ? C.up : r.pnl < 0 ? C.down : C.ink
     }
-  }, r.pnl >= 0 ? "▲" : "▼", " ", pct(r.pnlPct), " · ", usd(r.pnl))), /*#__PURE__*/React.createElement("div", {
+  }, r.pnl >= 0 ? "▲" : "▼", " ", pct(r.pnlPct), " · ", usd(r.pnl)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement(GraficoComObjetivos, {
+    curva: curva,
+    saldoInicial: mesa.saldoInicial,
+    regras: mesa.regras,
+    faseAtual: mesa.faseAtual,
+    cor: ct.cyan,
+    usd: usd
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 12,
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement(LegLinha, {
+    cor: ct.cyan,
+    txt: "Saldo"
+  }), (mesa.regras.targetPct[mesa.faseAtual - 1] || 0) > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#4ADE80",
+    txt: "Meta"
+  }), mesa.regras.perdaDiaPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#FFB454",
+    txt: "Perda dia"
+  }), mesa.regras.perdaTotalPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#FF5C7A",
+    txt: "Quebra"
+  }))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
@@ -2583,10 +2601,36 @@ function Estatisticas({
       fontSize: 14,
       color: lucroLiquido >= 0 ? C.up : C.down
     }
-  }, pct(lucroLiquido / mesa.saldoInicial * 100))), /*#__PURE__*/React.createElement(GraficoLinha, {
+  }, pct(lucroLiquido / mesa.saldoInicial * 100))), mesa.pessoal ? /*#__PURE__*/React.createElement(GraficoLinha, {
     valores: curva,
     cor: ct.cyan
-  })), /*#__PURE__*/React.createElement("div", {
+  }) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(GraficoComObjetivos, {
+    curva: curva,
+    saldoInicial: mesa.saldoInicial,
+    regras: mesa.regras,
+    faseAtual: mesa.faseAtual,
+    cor: ct.cyan,
+    usd: usd
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 12,
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement(LegLinha, {
+    cor: ct.cyan,
+    txt: "Saldo"
+  }), (mesa.regras.targetPct[mesa.faseAtual - 1] || 0) > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#4ADE80",
+    txt: "Meta"
+  }), mesa.regras.perdaDiaPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#FFB454",
+    txt: "Perda dia"
+  }), mesa.regras.perdaTotalPct > 0 && /*#__PURE__*/React.createElement(LegLinha, {
+    cor: "#FF5C7A",
+    txt: "Quebra"
+  })))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
@@ -2725,6 +2769,28 @@ function Estatisticas({
 }
 
 /* mini-componentes das estatísticas */
+function LegLinha({
+  cor,
+  txt
+}) {
+  return /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5,
+      fontSize: 11.5,
+      color: C.dim
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 14,
+      height: 3,
+      borderRadius: 2,
+      background: cor,
+      boxShadow: `0 0 6px ${cor}`
+    }
+  }), txt);
+}
 function cardVidro(ct) {
   return {
     background: "linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
@@ -2806,6 +2872,9 @@ function GraficoLinha({
   valores,
   cor
 }) {
+  // id único por instância para não haver conflito entre vários gráficos
+  const uidRef = React.useRef("g" + Math.random().toString(36).slice(2, 8));
+  const gid = uidRef.current;
   if (!valores || valores.length < 2) {
     return /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2838,7 +2907,7 @@ function GraficoLinha({
     viewBox: `0 0 ${w} ${h}`,
     preserveAspectRatio: "none"
   }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
-    id: "gl",
+    id: `${gid}-fill`,
     x1: "0",
     y1: "0",
     x2: "0",
@@ -2846,14 +2915,36 @@ function GraficoLinha({
   }, /*#__PURE__*/React.createElement("stop", {
     offset: "0",
     stopColor: c,
-    stopOpacity: "0.25"
+    stopOpacity: "0.28"
   }), /*#__PURE__*/React.createElement("stop", {
     offset: "1",
     stopColor: c,
     stopOpacity: "0"
-  }))), /*#__PURE__*/React.createElement("path", {
+  })), /*#__PURE__*/React.createElement("filter", {
+    id: `${gid}-glow`,
+    x: "-20%",
+    y: "-40%",
+    width: "140%",
+    height: "180%"
+  }, /*#__PURE__*/React.createElement("feGaussianBlur", {
+    stdDeviation: "2.4",
+    result: "b"
+  }), /*#__PURE__*/React.createElement("feMerge", null, /*#__PURE__*/React.createElement("feMergeNode", {
+    in: "b"
+  }), /*#__PURE__*/React.createElement("feMergeNode", {
+    in: "SourceGraphic"
+  })))), /*#__PURE__*/React.createElement("path", {
     d: area,
-    fill: "url(#gl)"
+    fill: `url(#${gid}-fill)`
+  }), /*#__PURE__*/React.createElement("path", {
+    d: d,
+    fill: "none",
+    stroke: c,
+    strokeWidth: "4",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    opacity: "0.35",
+    filter: `url(#${gid}-glow)`
   }), /*#__PURE__*/React.createElement("path", {
     d: d,
     fill: "none",
@@ -2861,6 +2952,177 @@ function GraficoLinha({
     strokeWidth: "2",
     strokeLinecap: "round",
     strokeLinejoin: "round"
+  }));
+}
+
+/* ---------- gráfico grande com linhas de objetivo (meta / perda diária / quebra) ---------- */
+function GraficoComObjetivos({
+  curva,
+  saldoInicial,
+  regras,
+  faseAtual,
+  cor,
+  usd,
+  moeda
+}) {
+  const uidRef = React.useRef("go" + Math.random().toString(36).slice(2, 8));
+  const gid = uidRef.current;
+  if (!curva || curva.length < 2) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        height: 150,
+        display: "grid",
+        placeItems: "center",
+        color: C.dim,
+        fontSize: 13,
+        textAlign: "center",
+        padding: 20
+      }
+    }, "Regista alguns trades para veres a tua linha de saldo entre os limites da mesa.");
+  }
+  const w = 340,
+    h = 190,
+    padL = 4,
+    padR = 6,
+    padT = 12,
+    padB = 16;
+
+  // limites da mesa
+  const alvoPct = regras.targetPct && regras.targetPct[faseAtual - 1] || 0;
+  const metaVal = alvoPct > 0 ? saldoInicial * (1 + alvoPct / 100) : null;
+  const perdaDiaVal = regras.perdaDiaPct > 0 ? saldoInicial * (1 - regras.perdaDiaPct / 100) : null;
+  const quebraVal = regras.perdaTotalPct > 0 ? saldoInicial * (1 - regras.perdaTotalPct / 100) : null;
+
+  // escala vertical: engloba curva + todos os limites
+  const candidatos = [...curva];
+  if (metaVal) candidatos.push(metaVal);
+  if (perdaDiaVal) candidatos.push(perdaDiaVal);
+  if (quebraVal) candidatos.push(quebraVal);
+  candidatos.push(saldoInicial);
+  let min = Math.min(...candidatos);
+  let max = Math.max(...candidatos);
+  const margem = (max - min) * 0.08 || saldoInicial * 0.01;
+  min -= margem;
+  max += margem;
+  const span = max - min || 1;
+  const Y = v => padT + (1 - (v - min) / span) * (h - padT - padB);
+  const X = i => padL + i / (curva.length - 1) * (w - padL - padR);
+  const pts = curva.map((v, i) => [X(i), Y(v)]);
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const area = `${d} L${pts[pts.length - 1][0].toFixed(1)} ${(h - padB).toFixed(1)} L${pts[0][0].toFixed(1)} ${(h - padB).toFixed(1)} Z`;
+  const saldoAtual = curva[curva.length - 1];
+  const subiu = saldoAtual >= saldoInicial;
+  const cLinha = subiu ? cor : "#FF7A90";
+
+  // rótulos de valor à esquerda (4 níveis)
+  const niveis = [max, min + span * 0.66, min + span * 0.33, min].map(v => ({
+    v,
+    y: Y(v)
+  }));
+  const fmtK = v => {
+    const abs = Math.abs(v);
+    if (abs >= 1000) return `${(v / 1000).toFixed(abs >= 100000 ? 0 : 1)}K`;
+    return v.toFixed(0);
+  };
+  const linhaObj = (val, corL, rotulo, alinhaDir) => val == null ? null : /*#__PURE__*/React.createElement("g", {
+    key: rotulo
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: padL,
+    y1: Y(val),
+    x2: w - padR,
+    y2: Y(val),
+    stroke: corL,
+    strokeWidth: "1.3",
+    strokeDasharray: "5 4",
+    opacity: "0.85"
+  }), /*#__PURE__*/React.createElement("text", {
+    x: alinhaDir ? w - padR : padL + 2,
+    y: Y(val) - 3,
+    fill: corL,
+    fontSize: "8.5",
+    fontFamily: "Inter, sans-serif",
+    fontWeight: "600",
+    textAnchor: alinhaDir ? "end" : "start"
+  }, rotulo));
+  return /*#__PURE__*/React.createElement("svg", {
+    width: "100%",
+    height: h + 6,
+    viewBox: `0 0 ${w} ${h + 6}`,
+    style: {
+      overflow: "visible"
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: `${gid}-fill`,
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: cLinha,
+    stopOpacity: "0.3"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: cLinha,
+    stopOpacity: "0"
+  })), /*#__PURE__*/React.createElement("filter", {
+    id: `${gid}-glow`,
+    x: "-20%",
+    y: "-40%",
+    width: "140%",
+    height: "180%"
+  }, /*#__PURE__*/React.createElement("feGaussianBlur", {
+    stdDeviation: "2.6",
+    result: "b"
+  }), /*#__PURE__*/React.createElement("feMerge", null, /*#__PURE__*/React.createElement("feMergeNode", {
+    in: "b"
+  }), /*#__PURE__*/React.createElement("feMergeNode", {
+    in: "SourceGraphic"
+  })))), niveis.map((n, i) => /*#__PURE__*/React.createElement("g", {
+    key: i
+  }, /*#__PURE__*/React.createElement("line", {
+    x1: padL,
+    y1: n.y,
+    x2: w - padR,
+    y2: n.y,
+    stroke: "rgba(255,255,255,0.05)",
+    strokeWidth: "1"
+  }), /*#__PURE__*/React.createElement("text", {
+    x: padL,
+    y: n.y - 2,
+    fill: "#5A6478",
+    fontSize: "8",
+    fontFamily: "'JetBrains Mono', monospace"
+  }, fmtK(n.v)))), linhaObj(metaVal, "#4ADE80", "META", true), linhaObj(perdaDiaVal, "#FFB454", "PERDA DIA", true), linhaObj(quebraVal, "#FF5C7A", "QUEBRA", false), /*#__PURE__*/React.createElement("path", {
+    d: area,
+    fill: `url(#${gid}-fill)`
+  }), /*#__PURE__*/React.createElement("path", {
+    d: d,
+    fill: "none",
+    stroke: cLinha,
+    strokeWidth: "4.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    opacity: "0.35",
+    filter: `url(#${gid}-glow)`
+  }), /*#__PURE__*/React.createElement("path", {
+    d: d,
+    fill: "none",
+    stroke: cLinha,
+    strokeWidth: "2.2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: pts[pts.length - 1][0],
+    cy: pts[pts.length - 1][1],
+    r: "8",
+    fill: cLinha,
+    opacity: "0.25"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: pts[pts.length - 1][0],
+    cy: pts[pts.length - 1][1],
+    r: "3.5",
+    fill: cLinha
   }));
 }
 
